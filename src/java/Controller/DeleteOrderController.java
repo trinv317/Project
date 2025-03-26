@@ -5,7 +5,7 @@
  */
 package Controller;
 
-import Cart.CartDTO;
+import Cart.OrderDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,12 +14,11 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-
 /**
  *
  * @author lienm
  */
-public class DeleteProductCartController extends HttpServlet {
+public class DeleteOrderController extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -30,36 +29,32 @@ public class DeleteProductCartController extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    private static final String ERROR = "usercart.jsp";
-    private static final String SUCCESS = "usercart.jsp";
+    private static final String ERROR = "checkout.jsp";
+    private static final String SUCCESS = "checkout.jsp";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         String url = ERROR;
         try {
-            String idGlasses = request.getParameter("idGlasses");
             HttpSession session = request.getSession();
-            CartDTO cart = (CartDTO) session.getAttribute("CART");
-            if (cart != null) {
-                if (cart.getCart().containsKey(idGlasses)) {
-                    boolean check = cart.remove(idGlasses);
-                    if (check) {
-                        if (cart.getCart().size() == 0) {
-                            session.setAttribute("CART", null);
-                        } else {
-                            session.setAttribute("CART", cart);
-                        }
-                        url = SUCCESS;
-                    }
-                }
+            int orderID = Integer.parseInt(request.getParameter("orderID"));
+            OrderDAO dao = new OrderDAO();
+            boolean checkDelete = dao.delete(orderID);
+            if (checkDelete) {
+                url = SUCCESS;
+                session.setAttribute("ERROR", "Delete succesfully!!");
+            } else {
+                session.setAttribute("ERROR", "Delete fail!");
             }
+
         } catch (Exception e) {
-            log("Error at DeleteProductCartController: " + e.toString());
+            log("Error at DeleteOrderController: " + e.toString());
         } finally {
             request.getRequestDispatcher(url).forward(request, response);
         }
     }
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
